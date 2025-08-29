@@ -25,7 +25,7 @@ class Player:
             self.hand += deck
             deck = thrown_deck[:]
             thrown_deck = []
-            deck.shuffle()
+            shuffle(deck)
             self.hand += deck[:n]
         else:
             self.hand += deck[:n]
@@ -81,11 +81,11 @@ class Game:
         if quality == 'high':
             shuffle(self.deck)
         elif quality == 'medium':
-            for _ in range(20):  # Fewer swaps
+            for _ in range(25):
                 i, j = randint(0, len(self.deck) - 1), randint(0, len(self.deck) - 1)
                 self.deck[i], self.deck[j] = self.deck[j], self.deck[i]
         elif quality == 'low':
-            for _ in range(5):  # Minimal randomization
+            for _ in range(7):
                 i, j = randint(0, len(self.deck) - 1), randint(0, len(self.deck) - 1)
                 self.deck[i], self.deck[j] = self.deck[j], self.deck[i]
         elif quality == 'none':
@@ -96,11 +96,12 @@ class Game:
             player.hand.remove(card)
             self.thrown_deck.append(self.last_card)
             self.last_card = card
+            self.card_action(card)
             return True
         return False
 
     def play(self):
-        while True:
+        while self.turns < 10000:
             self.turns += 1
             player = self.players[self.turn_of_player]
 
