@@ -19,24 +19,13 @@ class Player:
     def __init__(self, starting_hand):
         self.hand = starting_hand
 
-    def draw_cards(self, deck, thrown_deck, n):
-        if n >= len(deck):
-            n = n - len(deck)
-            self.hand += deck
-            deck = thrown_deck[:]
-            thrown_deck = []
-            shuffle(deck)
-            self.hand += deck[:n]
-        else:
-            self.hand += deck[:n]
-        return deck[n:], thrown_deck
-
     def __str__(self):
         return f'{self.hand}'
 
 
 class Game:
-    def __init__(self, num_players, num_cards, num_colours, num_starting_cards, reverse, skip, draw2, draw4):
+    def __init__(self, num_players, num_cards, num_colours, num_starting_cards, reverse, skip, draw2, draw4, shuffle_level="high"):
+        self.shuffle_level = shuffle_level
         self.turn_of_player = 0
         self.reverse = reverse
         self.skip = skip
@@ -51,7 +40,7 @@ class Game:
         for num in range(num_cards):
             for suit in range(num_colours):
                 self.deck.append(Card(num + 1, suit + 1))
-        shuffle(self.deck)
+        self.partial_shuffle(self.shuffle_level)
         self.players = []
         self.num_players = num_players
         self.num_cards = num_cards
@@ -66,6 +55,20 @@ class Game:
 
         if self.last_card.num in (7, 14):
             pass
+
+    def draw_cards(self, player, n):
+        if n == 0:
+            return
+        if n >= len(self.deck):
+            n = n - len(self.deck)
+            player.hand += self.deck
+            self.deck = self.thrown_deck[:]
+            self.thrown_deck = []
+            self.partial_shuffle(self.shuffle_level)
+            player.hand += self.deck[:n]
+        else:
+            player.hand += self.deck[:n]
+        self.deck = self.deck[n:]
 
     def card_action(self, card):
         if card.num == 7 and self.draw2:
@@ -105,9 +108,8 @@ class Game:
             self.turns += 1
             player = self.players[self.turn_of_player]
 
-            if self.next_draw != 0:
-                self.deck, self.thrown_deck = player.draw_cards(self.deck, self.thrown_deck, self.next_draw)
-                self.next_draw = 0
+            self.draw_cards(player, self.next_draw)
+            self.next_draw = 0
 
             flag = False
             for card in player.hand:
@@ -116,7 +118,7 @@ class Game:
                     break
 
             if not flag:
-                self.deck, self.thrown_deck = player.draw_cards(self.deck, self.thrown_deck, 1)
+                self.draw_cards(player, 1)
 
             if len(player.hand) == 0:
                 break
