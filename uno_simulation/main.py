@@ -1,6 +1,4 @@
-import time
 import random
-import heapq
 import os
 import csv
 from random import shuffle, randint
@@ -217,11 +215,11 @@ if __name__ == "__main__":
     primeroci2 = {}
 
     for np in range(2, 8):
-        primeroci1[np] = run_batch(np, n_runs=10000, with_specials=True)
+        primeroci1[np] = run_batch(np, n_runs=20000, with_specials=True)
         save_results(primeroci1[np], filename="results_with_specials.csv")
 
     for np in range(2, 8):
-        primeroci2[np] = run_batch(np, n_runs=10000, with_specials=False)
+        primeroci2[np] = run_batch(np, n_runs=20000, with_specials=False)
         save_results(primeroci2[np], filename="results_no_specials.csv")
 
     # Print stats
@@ -237,3 +235,4 @@ if __name__ == "__main__":
               max([r["turns"] for r in primerok2]))
         print("min", min([r["turns"] for r in primerok1]),
               min([r["turns"] for r in primerok2]))
+
