@@ -1,3 +1,4 @@
+seed,num_players,num_cards,num_colours,shuffle_level,specials,turns,winner
 0,2,14,4,high,False,11,0
 1,2,14,4,high,False,16,1
 2,2,14,4,high,False,64,1
