@@ -58,18 +58,21 @@ class Game:
             pass
 
     def draw_cards(self, player, n):
-        if n == 0:
+        if n <= 0:
             return
-        if n >= len(self.deck):
-            n = n - len(self.deck)
-            player.hand += self.deck
-            self.deck = self.thrown_deck[:]
-            self.thrown_deck = []
-            self.partial_shuffle(self.shuffle_level)
-            player.hand += self.deck[:n]
-        else:
-            player.hand += self.deck[:n]
-        self.deck = self.deck[n:]
+
+        while n > 0:
+            if not self.deck:
+                if not self.thrown_deck:
+                    return
+                self.deck = self.thrown_deck[:]
+                self.thrown_deck = []
+                self.partial_shuffle(self.shuffle_level)
+
+            take = min(n, len(self.deck))
+            player.hand += self.deck[:take]
+            self.deck = self.deck[take:]
+            n -= take
 
     def card_action(self, card):
         if card.num == 7 and self.draw2:
@@ -82,10 +85,12 @@ class Game:
             self.turn_of_player += self.order
 
     def partial_shuffle(self, quality='high'):
+        if len(self.deck) <= 1:
+            return
         if quality == 'high':
             shuffle(self.deck)
         elif quality == 'medium':
-            for _ in range(25):
+            for _ in range(15):
                 i, j = randint(0, len(self.deck) - 1), randint(0, len(self.deck) - 1)
                 self.deck[i], self.deck[j] = self.deck[j], self.deck[i]
         elif quality == 'low':
@@ -126,41 +131,6 @@ class Game:
             self.turn_of_player = (self.turn_of_player + self.order) % self.num_players
 
 
-# 1-92    2-50    3-43.5    4-44.25    5-47.5    6-51.35
-# {1: 91.9103, 2: 50.3073, 3: 43.4577, 4: 44.49545, 5: 47.4441, 6: 51.73825, 7: 56.48335}
-#
-# primeroci1 = {}
-# primeroci2 = {}
-# for np in range(2, 8):
-#     primerok = []
-#     for j in range(50000):
-#         game = Game(num_players=np, num_cards=14, num_colours=4, num_starting_cards=6, reverse=True, skip=True,
-#                     draw2=True, draw4=True)
-#         game.play()
-#         if game.turns != -1:
-#             primerok.append(game.turns)
-#     primeroci1[np] = primerok
-#
-# for np in range(2, 8):
-#     primerok = []
-#     for j in range(1000):
-#         game = Game(num_players=np, num_cards=14, num_colours=4, num_starting_cards=6, reverse=False, skip=False,
-#                     draw2=False, draw4=False)
-#         game.play()
-#         if game.turns != -1:
-#             primerok.append(game.turns)
-#     primeroci2[np] = primerok
-#
-# for np in primeroci1:
-#     primerok1 = primeroci1[np]
-#     primerok2 = primeroci2[np]
-#     print(np)
-#     print("standardna devijacija", stdev(primerok1), stdev(primerok2))
-#     print("prosek", mean(primerok1), mean(primerok2))
-#     print("maks", max(primerok1), max(primerok2))
-#     print("min", min(primerok1), min(primerok2))
-#     print()
-
 def run_game(seed, np, with_specials=True):
     random.seed(seed)
     game = Game(
@@ -172,6 +142,7 @@ def run_game(seed, np, with_specials=True):
         skip=with_specials,
         draw2=with_specials,
         draw4=with_specials,
+        shuffle_level="medium"
     )
     game.play()
     return {
@@ -179,10 +150,10 @@ def run_game(seed, np, with_specials=True):
         "num_players": np,
         "num_cards": 14,
         "num_colours": 4,
-        "shuffle_level": "high",  # could be param
+        "shuffle_level": "medium",
         "specials": with_specials,
         "turns": game.turns,
-        "winner": game.turn_of_player,  # winner index
+        "winner": game.turn_of_player,
     }
 
 
@@ -210,17 +181,19 @@ def save_results(rows, filename="results.csv"):
         writer.writerows(rows)
 
 
+max_num_players = 9
+
 if __name__ == "__main__":
     primeroci1 = {}
     primeroci2 = {}
 
-    for np in range(8, 9):
+    for np in range(2, max_num_players + 1):
         primeroci1[np] = run_batch(np, n_runs=20000, with_specials=True)
-        save_results(primeroci1[np], filename="results_with_specials.csv")
+        save_results(primeroci1[np], filename="results_with_specials_medium.csv")
 
-    for np in range(8, 9):
+    for np in range(2, max_num_players + 1):
         primeroci2[np] = run_batch(np, n_runs=20000, with_specials=False)
-        save_results(primeroci2[np], filename="results_no_specials.csv")
+        save_results(primeroci2[np], filename="results_no_specials_medium.csv")
 
     # Print stats
     for np in primeroci1:
@@ -235,4 +208,3 @@ if __name__ == "__main__":
               max([r["turns"] for r in primerok2]))
         print("min", min([r["turns"] for r in primerok1]),
               min([r["turns"] for r in primerok2]))
-
