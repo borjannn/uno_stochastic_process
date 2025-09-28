@@ -84,7 +84,7 @@ class Game:
         elif (card.num == 1 or card.num == 8) and self.skip:
             self.turn_of_player += self.order
 
-    def partial_shuffle(self, quality='high'):
+    def partial_shuffle(self, quality):
         if len(self.deck) <= 1:
             return
         if quality == 'high':
@@ -131,38 +131,38 @@ class Game:
             self.turn_of_player = (self.turn_of_player + self.order) % self.num_players
 
 
-def run_game(seed, np, with_specials=True):
+def run_game(seed, np, level_of_shuffle, with_specials=True):
     random.seed(seed)
     game = Game(
         num_players=np,
-        num_cards=14,
-        num_colours=4,
+        num_cards=16,
+        num_colours=6,
         num_starting_cards=6,
         reverse=with_specials,
         skip=with_specials,
         draw2=with_specials,
         draw4=with_specials,
-        shuffle_level="medium"
+        shuffle_level=level_of_shuffle
     )
     game.play()
     return {
         "seed": seed,
         "num_players": np,
-        "num_cards": 14,
-        "num_colours": 4,
-        "shuffle_level": "medium",
+        "num_cards": 16,
+        "num_colours": 6,
+        "shuffle_level": level_of_shuffle,
         "specials": with_specials,
         "turns": game.turns,
         "winner": game.turn_of_player,
     }
 
 
-def run_batch(np, n_runs=1000, with_specials=True, workers=None):
+def run_batch(np, level_of_shuffle, n_runs=1000, with_specials=True, workers=None):
     results = []
     workers = workers or os.cpu_count()
     with ProcessPoolExecutor(max_workers=workers) as executor:
         futures = [
-            executor.submit(run_game, seed, np, with_specials)
+            executor.submit(run_game, seed, np, level_of_shuffle, with_specials)
             for seed in range(n_runs)
         ]
         for f in as_completed(futures):
@@ -181,19 +181,20 @@ def save_results(rows, filename="results.csv"):
         writer.writerows(rows)
 
 
-max_num_players = 9
+max_num_players = 14
+level_of_shuffle = "high"
 
 if __name__ == "__main__":
     primeroci1 = {}
     primeroci2 = {}
 
     for np in range(2, max_num_players + 1):
-        primeroci1[np] = run_batch(np, n_runs=20000, with_specials=True)
-        save_results(primeroci1[np], filename="results_with_specials_medium.csv")
+        primeroci1[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=True)
+        save_results(primeroci1[np], filename="results_with_specials_high_16n6c.csv")
 
     for np in range(2, max_num_players + 1):
-        primeroci2[np] = run_batch(np, n_runs=20000, with_specials=False)
-        save_results(primeroci2[np], filename="results_no_specials_medium.csv")
+        primeroci2[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=False)
+        save_results(primeroci2[np], filename="results_no_specials_high_16n6c.csv")
 
     # Print stats
     for np in primeroci1:

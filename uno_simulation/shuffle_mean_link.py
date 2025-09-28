@@ -1,20 +1,17 @@
 import pandas as pd
 import matplotlib
-from main import max_num_players
 
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-# Load all your CSVs
-df_specials_low = pd.read_csv("results_with_specials_low.csv")
-df_specials_medium = pd.read_csv("results_with_specials_medium.csv")
-df_specials_high = pd.read_csv("results_with_specials_high.csv")
+df_specials_low = pd.read_csv("results_with_specials_low_16n6c.csv")
+df_specials_medium = pd.read_csv("results_with_specials_medium_16n6c.csv")
+df_specials_high = pd.read_csv("results_with_specials_high_16n6c.csv")
 
-df_no_specials_low = pd.read_csv("results_no_specials_low.csv")
-df_no_specials_medium = pd.read_csv("results_no_specials_medium.csv")
-df_no_specials_high = pd.read_csv("results_no_specials_high.csv")
+df_no_specials_low = pd.read_csv("results_no_specials_low_16n6c.csv")
+df_no_specials_medium = pd.read_csv("results_no_specials_medium_16n6c.csv")
+df_no_specials_high = pd.read_csv("results_no_specials_high_16n6c.csv")
 
-# Add labels so we can concatenate them
 for df, specials, shuffle in [
     (df_specials_low, True, "low"),
     (df_specials_medium, True, "medium"),
@@ -26,13 +23,11 @@ for df, specials, shuffle in [
     df["specials"] = specials
     df["shuffle_level"] = shuffle
 
-# Merge into one big DataFrame
 df_all = pd.concat([
     df_specials_low, df_specials_medium, df_specials_high,
     df_no_specials_low, df_no_specials_medium, df_no_specials_high
 ])
 
-# Compute summary stats: mean + std dev by group
 summary = (
     df_all
     .groupby(["specials", "shuffle_level", "num_players"])["turns"]
@@ -42,7 +37,6 @@ summary = (
 
 print(summary.head())
 
-# Plot std dev vs number of players on the same figure
 plt.figure(figsize=(8, 6))
 
 for (specials_flag, shuffle_level), subset in summary.groupby(["specials", "shuffle_level"]):

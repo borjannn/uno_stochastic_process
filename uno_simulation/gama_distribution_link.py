@@ -1,15 +1,17 @@
 import pandas as pd
 import numpy as np
 import matplotlib
+from scipy.interpolate import UnivariateSpline
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from scipy.stats import gamma
 
-df_specials = pd.read_csv("results_with_specials_high.csv")
-df_no_specials = pd.read_csv("results_no_specials_high.csv")
+df_specials = pd.read_csv("results_with_specials_high_16n6c.csv")
+df_no_specials = pd.read_csv("results_no_specials_high_16n6c.csv")
 
 fitted_params = []
-for n in range(2, 7):
+for n in range(2, 12):
     data = df_specials[df_specials["num_players"] == n]["turns"]
     shape, loc, scale = gamma.fit(data)
     fitted_params.append({"num_players": n, "shape": shape, "scale": scale})
@@ -17,19 +19,19 @@ for n in range(2, 7):
 print(fitted_params)
 df_params = pd.DataFrame(fitted_params)
 
-
-coeff_shape = np.polyfit(df_params["num_players"], df_params["shape"], 1)
-coeff_scale = np.polyfit(df_params["num_players"], df_params["scale"], 1)
+spline_shape = UnivariateSpline(df_params["num_players"], df_params["shape"], k=2, s=0)
+spline_scale = UnivariateSpline(df_params["num_players"], np.log(df_params["scale"]), k=2, s=0)
 
 predicted_params = {}
 
-for n in [8, 9]:
-    shape_pred = np.polyval(coeff_shape, n)
-    scale_pred = np.polyval(coeff_scale, n)
+for n in [12, 13, 14]:
+    shape_pred = spline_shape(n)
+    log_scale_pred = spline_scale(n)
+    scale_pred = np.exp(log_scale_pred)
     predicted_params[n] = {"shape": shape_pred, "scale": scale_pred}
     print(f"Predicted gamma params for {n} players: shape={shape_pred}, scale={scale_pred}")
 
-for n in [8, 9]:
+for n in [12, 13, 14]:
     data = df_specials[df_specials["num_players"] == n]["turns"]
 
     plt.hist(data, bins=50, density=True, alpha=0.5, label=f"Observed (n={n})")
