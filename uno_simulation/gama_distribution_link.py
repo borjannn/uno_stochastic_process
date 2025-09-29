@@ -22,15 +22,13 @@ coeff_shape = np.polyfit(df_params["num_players"], df_params["shape"], 1)
 coeff_scale = np.polyfit(df_params["num_players"], df_params["scale"], 1)
 
 predicted_params = {}
-# ---------- Subplots for 2–7 ----------
-fig, axes = plt.subplots(2, 3, figsize=(15, 8))  # 6 subplots (2 rows × 3 cols)
+fig, axes = plt.subplots(2, 3, figsize=(15, 8))
 axes = axes.flatten()
 
 for i, n in enumerate(range(2, 8)):
     ax = axes[i]
     data = df_specials[df_specials["num_players"] == n]["turns"]
 
-    # Histogram of observed data
     ax.hist(data, bins=50, density=True, alpha=0.3, label=f"Observed (n={n})")
 
     # Fitted gamma
@@ -55,17 +53,15 @@ for n in [8, 9]:
     predicted_params[n] = {"shape": shape_pred, "scale": scale_pred}
     print(f"Predicted gamma params for {n} players: shape={shape_pred}, scale={scale_pred}")
 
-fig, axes = plt.subplots(1, 2, figsize=(15, 8))  # 6 subplots (2 rows × 3 cols)
+fig, axes = plt.subplots(1, 2, figsize=(15, 8))
 axes = axes.flatten()
 
 for i, n in enumerate(range(8, 10)):
     ax = axes[i]
     data = df_specials[df_specials["num_players"] == n]["turns"]
 
-    # Histogram of observed data
     ax.hist(data, bins=50, density=True, alpha=0.3, label=f"Observed (n={n})")
 
-    # Fitted gamma
     shape = predicted_params[n]["shape"]
     scale = predicted_params[n]["scale"]
 

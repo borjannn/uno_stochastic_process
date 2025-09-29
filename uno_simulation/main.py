@@ -198,7 +198,6 @@ if __name__ == "__main__":
             primeroci2[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=False)
             save_results(primeroci2[np], filename=nospecialsfileot)
 
-        # Print stats
         for np in primeroci1:
             primerok1 = primeroci1[np]
             primerok2 = primeroci2[np]
