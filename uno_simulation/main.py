@@ -33,6 +33,9 @@ class Game:
         self.draw2 = draw2
         self.draw4 = draw4
         self.num_starting_cards = num_starting_cards
+        self.num_players = num_players
+        self.num_cards = num_cards
+        self.num_colours = num_colours
         self.next_draw = 0
         self.order = 1
         self.turns = 0
@@ -43,9 +46,6 @@ class Game:
                 self.deck.append(Card(num + 1, suit + 1))
         self.partial_shuffle(self.shuffle_level)
         self.players = []
-        self.num_players = num_players
-        self.num_cards = num_cards
-        self.num_colours = num_colours
         for i in range(num_players):
             starting_hand = self.deck[:self.num_starting_cards]
             self.deck = self.deck[self.num_starting_cards:]
@@ -90,11 +90,11 @@ class Game:
         if quality == 'high':
             shuffle(self.deck)
         elif quality == 'medium':
-            for _ in range(15):
+            for _ in range(self.num_cards*self.num_colours//4):
                 i, j = randint(0, len(self.deck) - 1), randint(0, len(self.deck) - 1)
                 self.deck[i], self.deck[j] = self.deck[j], self.deck[i]
         elif quality == 'low':
-            for _ in range(7):
+            for _ in range(self.num_cards*self.num_colours//8):
                 i, j = randint(0, len(self.deck) - 1), randint(0, len(self.deck) - 1)
                 self.deck[i], self.deck[j] = self.deck[j], self.deck[i]
         elif quality == 'none':
@@ -182,30 +182,32 @@ def save_results(rows, filename="results.csv"):
 
 
 max_num_players = 14
-level_of_shuffle = "high"
-
 if __name__ == "__main__":
-    primeroci1 = {}
-    primeroci2 = {}
+    levels_of_shuffle = {"low", "medium", "high"}
+    for level_of_shuffle in levels_of_shuffle:
+        primeroci1 = {}
+        primeroci2 = {}
+        specialsfileot = "results_with_specials_" + str(level_of_shuffle) + "_16n6c.csv"
+        nospecialsfileot = "results_no_specials_" + str(level_of_shuffle) + "_16n6c.csv"
 
-    for np in range(2, max_num_players + 1):
-        primeroci1[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=True)
-        save_results(primeroci1[np], filename="results_with_specials_high_16n6c.csv")
+        for np in range(2, max_num_players + 1):
+            primeroci1[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=True)
+            save_results(primeroci1[np], filename=specialsfileot)
 
-    for np in range(2, max_num_players + 1):
-        primeroci2[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=False)
-        save_results(primeroci2[np], filename="results_no_specials_high_16n6c.csv")
+        for np in range(2, max_num_players + 1):
+            primeroci2[np] = run_batch(np, level_of_shuffle, n_runs=15000, with_specials=False)
+            save_results(primeroci2[np], filename=nospecialsfileot)
 
-    # Print stats
-    for np in primeroci1:
-        primerok1 = primeroci1[np]
-        primerok2 = primeroci2[np]
-        print(f"\nPlayers = {np}")
-        print("standardna devijacija", stdev([r["turns"] for r in primerok1]),
-              stdev([r["turns"] for r in primerok2]))
-        print("prosek", mean([r["turns"] for r in primerok1]),
-              mean([r["turns"] for r in primerok2]))
-        print("maks", max([r["turns"] for r in primerok1]),
-              max([r["turns"] for r in primerok2]))
-        print("min", min([r["turns"] for r in primerok1]),
-              min([r["turns"] for r in primerok2]))
+        # Print stats
+        for np in primeroci1:
+            primerok1 = primeroci1[np]
+            primerok2 = primeroci2[np]
+            print(f"\nPlayers = {np}")
+            print("standardna devijacija", stdev([r["turns"] for r in primerok1]),
+                  stdev([r["turns"] for r in primerok2]))
+            print("prosek", mean([r["turns"] for r in primerok1]),
+                  mean([r["turns"] for r in primerok2]))
+            print("maks", max([r["turns"] for r in primerok1]),
+                  max([r["turns"] for r in primerok2]))
+            print("min", min([r["turns"] for r in primerok1]),
+                  min([r["turns"] for r in primerok2]))
